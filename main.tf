@@ -4,7 +4,7 @@
 resource "aws_launch_configuration" "this" {
   count = var.create_lc ? 1 : 0
 
-  name_prefix                 = "${coalesce(var.lc_name, var.name)}-"
+  name                        = var.lc_name
   image_id                    = var.image_id
   instance_type               = var.instance_type
   iam_instance_profile        = var.iam_instance_profile
@@ -62,15 +62,7 @@ resource "aws_launch_configuration" "this" {
 resource "aws_autoscaling_group" "this" {
   count = var.create_asg && false == var.create_asg_with_initial_lifecycle_hook ? 1 : 0
 
-  name_prefix = "${join(
-    "-",
-    compact(
-      [
-        coalesce(var.asg_name, var.name),
-        var.recreate_asg_when_lc_changes ? element(concat(random_pet.asg_name.*.id, [""]), 0) : "",
-      ],
-    ),
-  )}-"
+  name                 = var.asg_name
   launch_configuration = var.create_lc ? element(concat(aws_launch_configuration.this.*.name, [""]), 0) : var.launch_configuration
   vpc_zone_identifier  = var.vpc_zone_identifier
   max_size             = var.max_size
